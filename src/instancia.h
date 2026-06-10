@@ -13,11 +13,10 @@ private:
     int m_;
     int n_;
 
-    std::vector<std::vector<int>> costos_;
+    std::vector<std::vector<double>> costos_;
     std::vector<std::vector<int>> demandas_;
     std::vector<int> capacidades_;
-
-    int cmax_;
+    double cmax_;
 
 public:
 
@@ -31,18 +30,16 @@ public:
 
         archivo >> m_ >> n_;
 
-        costos_.assign(m_, std::vector<int>(n_));
+        costos_.assign(m_, std::vector<double>(n_));
         demandas_.assign(m_, std::vector<int>(n_));
         capacidades_.assign(m_, 0);
 
-        cmax_ = 0;
+        double cmax_ = 0;
 
         // matriz de costos
         for (int i = 0; i < m_; i++) {
             for (int j = 0; j < n_; j++) {
-
                 archivo >> costos_[i][j];
-
                 cmax_ = std::max(cmax_, costos_[i][j]);
             }
         }
@@ -68,7 +65,7 @@ public:
         return n_;
     }
 
-    int costo(int deposito, int vendedor) const {
+    double costo(int deposito, int vendedor) const {
         if (deposito < 0 || deposito >= m_) {
             throw std::out_of_range("Indice de deposito invalido");
         }
@@ -91,7 +88,7 @@ public:
     }
 
     return demandas_[deposito][vendedor];
-}
+    }
 
     int capacidad(int deposito) const {
 
@@ -102,7 +99,7 @@ public:
         return capacidades_[deposito];
     }
 
-    int cmax() const {
+    double cmax() const {
         return cmax_;
     }
 
@@ -110,11 +107,11 @@ public:
         return capacidades_;
     }
 
-    const std::vector<std::vector<int>>& costos() const {
+    const std::vector<std::vector<double>>& costos() const {
         return costos_;
     }
 
     const std::vector<std::vector<int>>& demandas() const {
         return demandas_;
     }
-    };
+}

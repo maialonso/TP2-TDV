@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 #include <fstream>
-
 #include "instancia.h"
 
 class Solucion {
@@ -33,7 +32,6 @@ public:
     }
 
     bool tienePenalizacion() const {
-
         for (int deposito : asignacion_) {
 
             if (deposito == -1) {
@@ -44,24 +42,24 @@ public:
         return false;
     }
 
-    long long costo(const Instancia& instancia) const {
+    double costo(const Instancia& instancia) const {
 
-        long long total = 0;
+        double total = 0.0;
 
         for (int vendedor = 0;
-             vendedor < asignacion_.size();
-             vendedor++) {
+            vendedor < asignacion_.size();
+            vendedor++) {
 
             int deposito = asignacion_[vendedor];
 
             if (deposito == -1) {
 
-                total += 3 * instancia.cmax();
+                total += 3.0 * instancia.cmax();
 
             } else {
 
                 total += instancia.costo(deposito,
-                                         vendedor);
+                                        vendedor);
             }
         }
 
@@ -110,4 +108,4 @@ public:
     const std::vector<int>& asignaciones() const {
         return asignacion_;
     }
-};
+}
