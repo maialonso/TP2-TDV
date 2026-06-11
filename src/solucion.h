@@ -108,4 +108,4 @@ public:
     const std::vector<int>& asignaciones() const {
         return asignacion_;
     }
-}
+};

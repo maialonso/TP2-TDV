@@ -114,4 +114,4 @@ public:
     const std::vector<std::vector<int>>& demandas() const {
         return demandas_;
     }
-}
+};
