@@ -46,4 +46,4 @@ Solucion heuristica1(const Instancia& instancia) {
     }
     
     return solucion;
-};
+}

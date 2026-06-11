@@ -1,3 +1,5 @@
+#include "instancia.h"
+#include "solucion.h"
 #include <algorithm>
 #include <climits>
 #include <numeric>
@@ -13,16 +15,18 @@ Solucion heuristica2(const Instancia& instancia) {
     std::vector<int> capacidades = instancia.capacidades();
 
     std::vector<int> vendedores(n);
-    std::iota(vendedores.begin(), vendedores.end(), 0);
+    std::iota(vendedores.begin(), vendedores.end(), 0); //crea vector de nuemeros consecutivos
 
     std::sort(vendedores.begin(), vendedores.end(),
-        [&](int v1, int v2) {
-            int demanda1 = instancia.demanda(0, v1);
-            int demanda2 = instancia.demanda(0, v2);
+    [&](int v1, int v2) {
 
-            return demanda1 > demanda2;
-        }
-    );
+        int demanda1 = instancia.demanda(0, v1);
+        int demanda2 = instancia.demanda(0, v2);
+
+        return demanda1 > demanda2;
+    }
+);
+
 
     for(int vendedor : vendedores) {
 
@@ -50,7 +54,8 @@ Solucion heuristica2(const Instancia& instancia) {
             capacidades[mejorDeposito] -=
                 instancia.demanda(mejorDeposito, vendedor);
         }
+        
     }
-
+    
     return solucion;
-};
+}
