@@ -7,7 +7,8 @@
 #include "solucion.h"
 #include "heuristica1.h"
 #include "heuristica2.h"
-
+#include "bl.h"
+#include "swap.h"
 
 int main() {
 
@@ -15,61 +16,76 @@ int main() {
 
     Solucion s = heuristica1(instancia);
 
-    std::cout << "Asignaciones:\n";
+    std::cout
+        << s.costo(instancia)
+        << std::endl;
 
-    for(int vendedor = 0;
-        vendedor < instancia.cantidadVendedores();
-        vendedor++) {
 
-        std::cout << "Vendedor "
-                  << vendedor
-                  << " -> Deposito "
-                  << s.depositoDe(vendedor)
-                  << std::endl;
-    }
+    Solucion mejor =
+        busquedaLocal(
+            instancia,
+            s
+        );
 
-    std::cout << "\nSin asignar:\n";
+    std::cout
+        << mejor.costo(instancia)
+        << std::endl;
 
-    for(int vendedor = 0;
-        vendedor < instancia.cantidadVendedores();
-        vendedor++) {
+//     std::cout << "Asignaciones:\n";
 
-        if(!s.estaAsignado(vendedor)) {
+//     for(int vendedor = 0;
+//         vendedor < instancia.cantidadVendedores();
+//         vendedor++) {
 
-            std::cout << "Vendedor "
-                      << vendedor
-                      << " sin asignar"
-                      << std::endl;
-        }
-    }
-    for(int vendedor = 0;
-    vendedor < instancia.cantidadVendedores();
-    vendedor++) {
+//         std::cout << "Vendedor "
+//                   << vendedor
+//                   << " -> Deposito "
+//                   << s.depositoDe(vendedor)
+//                   << std::endl;
+//     }
 
-    if(!s.estaAsignado(vendedor)) {
+//     std::cout << "\nSin asignar:\n";
 
-        std::cout << "\nVendedor "
-                  << vendedor
-                  << " no pudo asignarse:\n";
+//     for(int vendedor = 0;
+//         vendedor < instancia.cantidadVendedores();
+//         vendedor++) {
 
-        for(int deposito = 0;
-            deposito < instancia.cantidadDepositos();
-            deposito++) {
+//         if(!s.estaAsignado(vendedor)) {
 
-            std::cout
-                << "  Deposito "
-                << deposito
-                << " necesita "
-                << instancia.demanda(deposito, vendedor)
-                << " y quedan "
-                << instancia.capacidad(deposito)
-                << std::endl;
-        }
-    }
-}
-    std::cout << "\nCosto total: "
-              << s.costo(instancia)
-              << std::endl;
+//             std::cout << "Vendedor "
+//                       << vendedor
+//                       << " sin asignar"
+//                       << std::endl;
+//         }
+//     }
+//     for(int vendedor = 0;
+//     vendedor < instancia.cantidadVendedores();
+//     vendedor++) {
+
+//     if(!s.estaAsignado(vendedor)) {
+
+//         std::cout << "\nVendedor "
+//                   << vendedor
+//                   << " no pudo asignarse:\n";
+
+//         for(int deposito = 0;
+//             deposito < instancia.cantidadDepositos();
+//             deposito++) {
+
+//             std::cout
+//                 << "  Deposito "
+//                 << deposito
+//                 << " necesita "
+//                 << instancia.demanda(deposito, vendedor)
+//                 << " y quedan "
+//                 << instancia.capacidad(deposito)
+//                 << std::endl;
+//         }
+//     }
+// }
+//     std::cout << "\nCosto total: "
+//               << s.costo(instancia)
+//               << std::endl;
 
     return 0;
 }
