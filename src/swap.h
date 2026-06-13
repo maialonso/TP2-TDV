@@ -19,11 +19,11 @@ bool swapVendedores(Solucion& solucion, const Instancia& instancia, int v1,int v
 
         int deposito = solucion.depositoDe(vendedor);
 
-        if(deposito != -1) {
+        if(deposito != -1) {// resta la demanda actual
             capacidadRestante[deposito] -= instancia.demanda(deposito, vendedor);
         }
     }
-
+    
     capacidadRestante[d1] += instancia.demanda(d1, v1);
     capacidadRestante[d2] +=instancia.demanda(d2, v2);
 
