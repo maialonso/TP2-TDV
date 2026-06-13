@@ -9,7 +9,47 @@
 #include "heuristica2.h"
 #include "bl.h"
 #include "swap.h"
+#include "relocate.h"
+#include "metaHeuristica.h"
 
+//main metaheuristica
+int main(int argc, char* argv[]) {
+
+    if(argc < 3) {
+        std::cerr << "Uso: ./tp2 <archivo_input> <archivo_output>" << std::endl;
+        return 1;
+    }
+
+    std::string archivoInput = argv[1];
+    std::string archivoOutput = argv[2];
+
+    // leo la instancia
+    Instancia instancia(archivoInput);
+
+    std::cout << "Instancia cargada: " 
+              << instancia.cantidadVendedores() << " vendedores, "
+              << instancia.cantidadDepositos() << " depositos" << std::endl;
+
+    // solución inicial con heurística
+    Solucion inicial = heuristica2(instancia);
+    std::cout << "Costo heuristica: " << inicial.costo(instancia) << std::endl;
+
+    // simulated annealing
+    Solucion resultado = simulatedAnnealing(instancia, inicial);
+    std::cout << "Costo SA: " << resultado.costo(instancia) << std::endl;
+
+    // guardo resultado
+    resultado.guardar(archivoOutput, instancia);
+    std::cout << "Solución guardada en " << archivoOutput << std::endl;
+
+    return 0;
+}
+
+
+
+
+
+/*
 int main() {
 
     Instancia instancia("instances/real/real_instance");
@@ -30,7 +70,7 @@ int main() {
     std::cout
         << mejor.costo(instancia)
         << std::endl;
-
+*/
 //     std::cout << "Asignaciones:\n";
 
 //     for(int vendedor = 0;
@@ -87,5 +127,5 @@ int main() {
 //               << s.costo(instancia)
 //               << std::endl;
 
-    return 0;
-}
+    //return 0;
+//}
