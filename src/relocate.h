@@ -1,6 +1,7 @@
 #pragma once
 #include "instancia.h"
 #include "solucion.h"
+#include <random>
 
 bool relocate(Solucion& solucion, const Instancia& instancia, int v1){
     
@@ -49,5 +50,40 @@ bool relocate(Solucion& solucion, const Instancia& instancia, int v1){
     solucion.asignar(v1, mejorDeposito);
     return true;
 
+}
+
+
+bool relocateAleatorio(Solucion& solucion, const Instancia& instancia, int v1, std::mt19937& rng) {
+    
+    int d0 = solucion.depositoDe(v1);
+
+    std::vector<int> capacidadRestante = instancia.capacidades();
+
+    for(int vendedor = 0; vendedor < instancia.cantidadVendedores(); vendedor++) {
+        int deposito = solucion.depositoDe(vendedor);
+        if(deposito != -1) {
+            capacidadRestante[deposito] -= instancia.demanda(deposito, vendedor);
+        }
+    }
+
+    // armamos vector de depositos factibles (distintos al actual)
+    std::vector<int> factibles;
+    for(int deposito = 0; deposito < (int)capacidadRestante.size(); deposito++) {
+        if(deposito != d0) {
+            int demanda = instancia.demanda(deposito, v1);
+            if(capacidadRestante[deposito] >= demanda) {
+                factibles.push_back(deposito);
+            }
+        }
+    }
+
+    if(factibles.empty()) return false;
+
+    // elegimos uno al azar
+    std::uniform_int_distribution<int> dist(0, factibles.size() - 1);
+    int depositoElegido = factibles[dist(rng)];
+
+    solucion.asignar(v1, depositoElegido);
+    return true;
 }
 
