@@ -1,6 +1,7 @@
 #pragma once
 
 #include "swap.h"
+#include "relocate.h"
 
 Solucion busquedaLocalSwap(const Instancia& instancia, Solucion actual) {
 
