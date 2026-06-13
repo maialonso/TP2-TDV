@@ -33,8 +33,7 @@ public:
         costos_.assign(m_, std::vector<double>(n_));
         demandas_.assign(m_, std::vector<int>(n_));
         capacidades_.assign(m_, 0);
-
-        double cmax_ = 0;
+        cmax_ = 0;
 
         // matriz de costos
         for (int i = 0; i < m_; i++) {
