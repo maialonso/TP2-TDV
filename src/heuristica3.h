@@ -1,7 +1,7 @@
+#pragma once
 #include "instancia.h"
 #include "solucion.h"
 #include "solver.h"
-
 #include <algorithm>
 #include <numeric>
 #include <vector>

@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include "instancia.h"
 #include "solucion.h"
