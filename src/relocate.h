@@ -1,77 +1,37 @@
 #pragma once
-#include <climits>
-#include <vector>
 #include "instancia.h"
 #include "solucion.h"
+#include "solver.h"
 #include <random>
-#include <climits>
+#include <vector>
 
-bool relocate(Solucion& solucion, const Instancia& instancia, int v1){
+// intenta mover un vendedor al depósito factible de menor costo
+bool relocate(Solucion& solucion, const Instancia& instancia, int v1) {
     
-    int d0= solucion.depositoDe(v1); //donde ya estaba asignado
-    
-    //busco el proximo deposito donde entra
+    int d0 = solucion.depositoDe(v1); // depósito actual del vendedor
+    Solver solver(instancia);
+    std::vector<int> capacidadRestante = solver.capacidadRestante(solucion);    // calcula la capacidad restante de cada depósito
 
-    std::vector<int> capacidadRestante = instancia.capacidades(); //para no modificar la instancia, lo copio
+    int mejorDeposito = solver.mejorDepositoFactibleDistinto(v1, d0,capacidadRestante);    // busca el mejor depósito factible distinto al actual
 
-    for(int vendedor = 0; vendedor < instancia.cantidadVendedores(); vendedor++) {
+    if(mejorDeposito == -1) return false;   // si no existe un depósito factible, no hace el movimiento
 
-        int deposito = solucion.depositoDe(vendedor);
+    solucion.asignar(v1, mejorDeposito);    // reasigna el vendedor al nuevo depósito
 
-        if(deposito != -1) {// resta la demanda actual
-            capacidadRestante[deposito] -= instancia.demanda(deposito, vendedor);
-        }
-    }
-    //para el final de este ciclo, capacidadRestante tiene lo que le queda de capacidad a cada deposito
-
-    //Ahora queda buscar la asignacion factible con menor costo
-    int mejorDeposito = -1;
-    double mejorCosto = INT_MAX;
-
-    for(int deposito = 0; deposito < capacidadRestante.size(); deposito++) { //recorre por deposito
-
-        int demanda = instancia.demanda(deposito, v1); 
-
-        if(d0 != deposito){ //deposito diferente 
-            if(capacidadRestante[deposito] >= demanda) {
-
-                double costo = instancia.costo(deposito, v1);
-
-                if(costo < mejorCosto) {
-
-                mejorCosto = costo;
-                mejorDeposito = deposito;
-                }
-            }
-        }
-    }
-    //para el final de este ciclo, mejorDeposito tiene el deposito al que se le va a asignar(puede ser -1)
-
-    if(mejorDeposito == -1) return false;
-
-    //reasigno sino
-    solucion.asignar(v1, mejorDeposito);
     return true;
-
 }
 
-
+// intenta mover un vendedor a un depósito factible elegido al azar
 bool relocateAleatorio(Solucion& solucion, const Instancia& instancia, int v1, std::mt19937& rng) {
-    
-    int d0 = solucion.depositoDe(v1);
 
-    std::vector<int> capacidadRestante = instancia.capacidades();
+    int d0 = solucion.depositoDe(v1); // depósito actual del vendedor
+    Solver solver(instancia);
 
-    for(int vendedor = 0; vendedor < instancia.cantidadVendedores(); vendedor++) {
-        int deposito = solucion.depositoDe(vendedor);
-        if(deposito != -1) {
-            capacidadRestante[deposito] -= instancia.demanda(deposito, vendedor);
-        }
-    }
+    std::vector<int> capacidadRestante = solver.capacidadRestante(solucion);    // calcula la capacidad restante de cada depósito
+    std::vector<int> factibles; // guarda los depósitos factibles distintos al actual
 
-    // armamos vector de depositos factibles (distintos al actual)
-    std::vector<int> factibles;
     for(int deposito = 0; deposito < (int)capacidadRestante.size(); deposito++) {
+
         if(deposito != d0) {
             int demanda = instancia.demanda(deposito, v1);
             if(capacidadRestante[deposito] >= demanda) {
@@ -80,13 +40,13 @@ bool relocateAleatorio(Solucion& solucion, const Instancia& instancia, int v1, s
         }
     }
 
-    if(factibles.empty()) return false;
+    if(factibles.empty()) return false; // si no hay depósitos factibles, no hace el movimiento
 
-    // elegimos uno al azar
-    std::uniform_int_distribution<int> dist(0, factibles.size() - 1);
+    std::uniform_int_distribution<int> dist(0, factibles.size() - 1);   // elige un depósito factible al azar
+
     int depositoElegido = factibles[dist(rng)];
 
-    solucion.asignar(v1, depositoElegido);
+    solucion.asignar(v1, depositoElegido);  // reasigna el vendedor al depósito elegido
+
     return true;
 }
-
