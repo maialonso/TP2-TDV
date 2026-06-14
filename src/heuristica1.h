@@ -1,3 +1,5 @@
+#include <climits>
+#include <vector>
 #include "instancia.h"
 #include "solucion.h"
 

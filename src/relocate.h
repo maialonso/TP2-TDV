@@ -1,7 +1,10 @@
 #pragma once
+#include <climits>
+#include <vector>
 #include "instancia.h"
 #include "solucion.h"
 #include <random>
+#include <climits>
 
 bool relocate(Solucion& solucion, const Instancia& instancia, int v1){
     
