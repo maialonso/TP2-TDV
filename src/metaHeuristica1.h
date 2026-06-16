@@ -58,7 +58,7 @@ Solucion ILS(const Instancia& instancia, const Solucion& inicial, int iteracione
     std::mt19937 rng(42); // semilla fija para poder reproducir resultados
     int n = instancia.cantidadVendedores();
 
-    int cantidadRelocates = std::max(1, (int)(porcentajePerturbacion * n)); // cantidad de vendedores a relocalizar
+    int cantidadRelocates = std::max(1, (int)(porcentajePerturbacion * n)); // cantidad de vendedores a relocalizar (usa max porque no tiene sentido relocate con 0)
 
     Solucion mejor = VNDSwapRelocate(instancia, inicial); // primero mejora la solución inicial con VND
 
