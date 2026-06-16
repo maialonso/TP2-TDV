@@ -1,71 +1,49 @@
 #pragma once
-#include <vector>
-#include <climits>
 #include "instancia.h"
 #include "solucion.h"
+#include <vector>
+#include <random>
 
 class Solver {
-
 private:
-
     const Instancia& instancia_;
+
 public:
+    Solver(const Instancia& instancia);
 
-    Solver(const Instancia& instancia): instancia_(instancia) {}
+    // auxiliares
+    std::vector<int> capacidadRestante(const Solucion&) const;
+    int mejorDepositoFactible(int vendedor,
+                              const std::vector<int>& capacidad) const;
 
-    std::vector<int> capacidadRestante(const Solucion& solucion) const {
-        std::vector<int> capacidad = instancia_.capacidades();
+    int mejorDepositoFactibleDistinto(
+        int vendedor,
+        int depositoActual,
+        const std::vector<int>& capacidad) const;
 
-        for(int vendedor = 0; vendedor < instancia_.cantidadVendedores(); vendedor++) {
+    // heurísticas
+    Solucion heuristicaSecuencial() const;
+    Solucion heuristicaDemandaMax() const;
+    Solucion heuristicaDemandaProm() const;
 
-            int deposito = solucion.depositoDe(vendedor);
+    // operadores/ movimientos
+    bool swapVendedores(Solucion&, int v1, int v2) const;
+    bool relocate(Solucion&, int v1) const;
+    bool relocateAleatorio(
+        Solucion&,
+        int v1,
+        std::mt19937& rng) const;
 
-            if(deposito != -1) {
-                capacidad[deposito] -= instancia_.demanda(deposito, vendedor);
-            }
-        }
-        return capacidad;
-    }
+    // búsqueda local
+    Solucion busquedaLocalSwap(Solucion) const;
+    Solucion busquedaLocalRelocate(Solucion) const;
 
+    // metaheurísticas
+    Solucion VNDSwapRelocate(Solucion) const;
+    Solucion perturbarConRelocate(Solucion solucion, int cantidadRelocates, std::mt19937& rng) const;
+    Solucion ILS(
+        const Solucion& inicial,
+        int iteraciones,
+        double porcentajePerturbacion) const;
 
-    int mejorDepositoFactible(int vendedor, const std::vector<int>& capacidad) const {
-        int mejorDeposito = -1;
-        double mejorCosto = INT_MAX;
-
-        for(int deposito = 0; deposito < instancia_.cantidadDepositos(); deposito++) {
-            int demanda = instancia_.demanda(deposito, vendedor);
-            
-            if(capacidad[deposito] >= demanda) {
-                double costo = instancia_.costo(deposito, vendedor);
-
-                if(costo < mejorCosto) {
-                    mejorCosto = costo;
-                    mejorDeposito = deposito;
-                }
-            }
-        }
-        return mejorDeposito;
-    }
-
-    int mejorDepositoFactibleDistinto(int vendedor, int depositoActual, const std::vector<int>& capacidadRestante) const {
-
-        int mejorDeposito = -1;
-        double mejorCosto = INT_MAX;
-
-        for(int deposito = 0; deposito < capacidadRestante.size(); deposito++) {
-            int demanda = instancia_.demanda(deposito, vendedor);
-            
-            if(deposito != depositoActual) {
-                if(capacidadRestante[deposito] >= demanda) {
-                    double costo = instancia_.costo(deposito, vendedor);
-
-                    if(costo < mejorCosto) {
-                        mejorCosto = costo;
-                        mejorDeposito = deposito;
-                    }
-                }
-            }
-        }
-        return mejorDeposito;
-    }
 };
