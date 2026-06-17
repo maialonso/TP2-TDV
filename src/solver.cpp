@@ -295,17 +295,22 @@ bool Solver::relocateAleatorio( Solucion& solucion, int v1, std::mt19937& rng) c
 // BUSQUEDA LOCAL
 
 
+// aplica búsqueda local utilizando únicamente movimientos Swap
 Solucion Solver::busquedaLocalSwap(Solucion actual) const {
+
     bool mejora = true;
-    while(mejora) {
+    while(mejora) { // repite mientras encuentre mejoras
+
         mejora = false;
 
-        for(int v1 = 0; v1 < instancia_.cantidadVendedores(); v1++) {
-
+        for(int v1 = 0; v1 < instancia_.cantidadVendedores(); v1++) {   // recorre todos los pares de vendedores
             for(int v2 = v1 + 1; v2 < instancia_.cantidadVendedores(); v2++) {
-                Solucion vecina = actual;
-                if(swapVendedores(vecina, v1, v2)) {
-                    if(vecina.mejorQue(actual, instancia_)) {
+
+                Solucion vecina = actual;   // genera una solución vecina
+
+                if(swapVendedores(vecina, v1, v2)) {    // intenta intercambiar los vendedores
+                    if(vecina.mejorQue(actual, instancia_)) {   // si la solución vecina mejora a la actual actualiza la solución de trabajo
+
                         actual = vecina;
                         mejora = true;
                     }
@@ -313,18 +318,23 @@ Solucion Solver::busquedaLocalSwap(Solucion actual) const {
             }
         }
     }
-    return actual;
+
+    return actual;  // devuelve el óptimo local alcanzado mediante swaps
 }
+
+// aplica búsqueda local utilizando únicamente movimientos Relocate
 Solucion Solver::busquedaLocalRelocate(Solucion actual) const {
+
     bool mejora = true;
-    while(mejora) {
+    while(mejora) { // repite mientras encuentre mejoras
 
         mejora = false;
-        for(int v1 = 0; v1 < instancia_.cantidadVendedores(); v1++) {
+        for(int v1 = 0; v1 < instancia_.cantidadVendedores(); v1++) {   // recorre todos los vendedores
 
-            Solucion vecina = actual;
-            if(relocate(vecina, v1)) {
-                if(vecina.mejorQue(actual, instancia_)) {
+            Solucion vecina = actual;   // genera una solución vecina
+
+            if(relocate(vecina, v1)) {  // intenta reasignar el vendedor
+                if(vecina.mejorQue(actual, instancia_)) {    // si la solución vecina mejora a la actual actualiza la solución de trabajo
                     actual = vecina;
                     mejora = true;
                 }
@@ -333,35 +343,43 @@ Solucion Solver::busquedaLocalRelocate(Solucion actual) const {
     }
     return actual;
 }
-    // METAHEURISTICAS
+
+
+
+// METAHEURISTICAS
 
     
-// aplica búsqueda local combinando swap y relocate
+// aplica VND combinando búsqueda local por Swap y Relocate
 Solucion Solver::VNDSwapRelocate(Solucion actual) const {
-    while(true) { // repite hasta que ningún operador mejore
-        actual = busquedaLocalSwap(actual); // prueba todos los swaps posibles
-        Solucion despuesSwap = actual;  // guarda cómo quedó después de swap
-        Solucion despuesRelocate = busquedaLocalRelocate(actual); // prueba todos los relocates posibles
 
-        if(despuesRelocate.mejorQue(despuesSwap, instancia_)) { // si relocate mejoró, actualiza y vuelve a swap
+    while(true) {
+
+        actual = busquedaLocalSwap(actual); // primero aplica todos los swaps que mejoren la solución
+        Solucion despuesSwap = actual;  // guarda la solución obtenida después de swap
+        Solucion despuesRelocate = busquedaLocalRelocate(actual);   // luego aplica todos los relocates que mejoren la solución
+
+        if(despuesRelocate.mejorQue(despuesSwap, instancia_)) { // si relocate mejoró, actualiza y vuelve a intentar swap
             actual = despuesRelocate;
-            continue;  // volver a swap
+            continue;
         }
 
-        break; // si relocate no mejoró, termina
+        break;   // si relocate no mejoró, termina el VND
     }
 
-    return actual; // devuelve el min local encontrado
+    return actual; // devuelve el óptimo local encontrado
 }
+
 
 // perturba una solución con relocates aleatorios
 Solucion Solver::perturbarConRelocate(Solucion solucion, int cantidadRelocates,std::mt19937& rng) const {
+
     std::uniform_int_distribution<int> distVendedor(0, instancia_.cantidadVendedores() - 1); // sortea vendedores entre 0 y n-1
     int hechos = 0; // relocates exitosos
     int intentos = 0; // intentos realizados
     int maxIntentos = cantidadRelocates * 10; // evita quedar en loop infinito si no hay movimientos factibles
 
     while(hechos < cantidadRelocates && intentos < maxIntentos) {
+
         int vendedor = distVendedor(rng); // elije un vendedor al azar
         hechos += relocateAleatorio(solucion, vendedor, rng);
         intentos++;
@@ -370,20 +388,24 @@ Solucion Solver::perturbarConRelocate(Solucion solucion, int cantidadRelocates,s
     return solucion; // devuelve la solución perturbada
 }
 
-// Iterated Local Search
+
+// aplica Iterated Local Search utilizando VND y perturbaciones por Relocate
 Solucion Solver::ILS(const Solucion& inicial, int iteraciones, double porcentajePerturbacion) const {
+
     std::mt19937 rng(42); // semilla fija para poder reproducir resultados
     int n = instancia_.cantidadVendedores();
 
     int cantidadRelocates = std::max(1, (int)(porcentajePerturbacion * n)); // cantidad de vendedores a relocalizar (usa max porque no tiene sentido relocate con 0)
-    Solucion mejor = VNDSwapRelocate(inicial); // primero mejora la solución inicial con VND
+    Solucion mejor = VNDSwapRelocate(inicial);  // obtiene un primer óptimo local a partir de la solución inicial
     
-    for(int it = 0; it < iteraciones; it++) { // repite el proceso varias veces
-        Solucion perturbada = perturbarConRelocate(mejor, cantidadRelocates, rng);  // perturba siempre la mejor solución encontrada
-        Solucion nueva = VNDSwapRelocate(perturbada);  // después de perturbar, vuelve a mejorar con VND
-        if(nueva.mejorQue( mejor, instancia_)) { // si la nueva solución es mejor, la guarda
+    for(int it = 0; it < iteraciones; it++) { // repite el proceso de perturbación y búsqueda local
+
+        Solucion perturbada = perturbarConRelocate(mejor, cantidadRelocates, rng);  // perturba la mejor solución encontrada
+        Solucion nueva = VNDSwapRelocate(perturbada);  // vuelve a optimizar la solución perturbada
+        if(nueva.mejorQue( mejor, instancia_)) { // si encuentra una solución mejor actualiza la mejor solución conocida
             mejor = nueva;
         }
     }
+
     return mejor; // devuelve la mejor solución encontrada
 }
