@@ -28,6 +28,7 @@ public:
 
     // operadores/ movimientos
     bool swapVendedores(Solucion&, int v1, int v2) const;
+    bool relocateViejo(Solucion&, int v1) const;
     bool relocate(Solucion&, int v1) const;
     bool relocateAleatorio(
         Solucion&,
