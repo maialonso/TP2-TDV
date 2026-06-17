@@ -217,8 +217,8 @@ bool Solver::swapVendedores(Solucion& solucion, int v1, int v2) const {
 }
 
 
-// intenta mover un vendedor asignado a otro depósito factible de menor costo (versión original)
-bool Solver::relocateViejo(Solucion& solucion,int v1) const {
+// intenta mover un vendedor asignado a otro depósito factible de menor costo
+bool Solver::relocate(Solucion& solucion, int v1) const {
 
     int d0 = solucion.depositoDe(v1); // depósito actual del vendedor
     std::vector<int> capacidadRestante_ = capacidadRestante(solucion); // calcula la capacidad restante de cada depósito
@@ -231,46 +231,15 @@ bool Solver::relocateViejo(Solucion& solucion,int v1) const {
 }
 
 
-// intenta mover un vendedor a otro depósito factible considerando también el depósito -1 (no asignados)(versión final)
-bool Solver::relocate(Solucion& solucion, int v1) const {
-
-    int d0 = solucion.depositoDe(v1); // depósito actual del vendedor (-1 si no está asignado)
-    std::vector<int> capacidadRestante_ = capacidadRestante(solucion);  // calcula la capacidad restante de cada depósito real
-
-    int mejorDeposito = -1; // mejor destino encontrado
-    double mejorCosto = 3.0 * instancia_.cmax(); // costo de dejarlo sin asignar
-
-    for(int deposito = 0; deposito < instancia_.cantidadDepositos(); deposito++) {   // recorre todos los depósitos reales
-
-        if(deposito == d0) continue;   // no considera quedarse en el mismo depósito
-        int demanda = instancia_.demanda(deposito, v1);
-
-        if(capacidadRestante_[deposito] >= demanda) {   // verifica si entra en el depósito candidato
-
-            double costo = instancia_.costo(deposito, v1);
-
-            if(costo < mejorCosto) {    // guarda el depósito factible de menor costo
-                mejorCosto = costo;
-                mejorDeposito = deposito;
-            }
-        }
-    }
-
-    if(mejorDeposito == d0) return false;   // si el mejor destino es el mismo estado actual no realiza ningún movimiento
-    solucion.asignar(v1, mejorDeposito);    // reasigna el vendedor al mejor destino encontrado (depósito real o -1)
-    return true; // movimiento realizado
-}
-
-
 // intenta mover un vendedor a un destino factible elegido al azar considerando también el depósito -1
-bool Solver::relocateAleatorio( Solucion& solucion, int v1, std::mt19937& rng) const {
+bool Solver::relocateAleatorio(Solucion& solucion, int v1, std::mt19937& rng) const {
 
     int d0 = solucion.depositoDe(v1); // depósito actual del vendedor (-1 si no está asignado)
 
     std::vector<int> capacidadRestante_ = capacidadRestante(solucion);  // calcula la capacidad restante de cada depósito real
     std::vector<int> factibles;  // guarda todos los destinos posibles
 
-    // si el vendedor está asignado  permite moverlo al depósito de no asignados
+    // si el vendedor está asignado permite moverlo al depósito de no asignados
     if(d0 != -1) factibles.push_back(-1);
 
     // recorre todos los depósitos reales
@@ -278,14 +247,19 @@ bool Solver::relocateAleatorio( Solucion& solucion, int v1, std::mt19937& rng) c
 
         // no considera quedarse en el mismo depósito
         if(deposito == d0) continue;
+
         int demanda = instancia_.demanda(deposito, v1);
-        if(capacidadRestante_[deposito] >= demanda) factibles.push_back(deposito);  // si el vendedor entra en el depósito lo agrega como destino posible
+
+        if(capacidadRestante_[deposito] >= demanda) {
+            factibles.push_back(deposito);  // si el vendedor entra en el depósito lo agrega como destino posible
+        }
     }
 
     if(factibles.empty()) return false;   // si no hay ningún destino posible no realiza ningún movimiento
 
-    std::uniform_int_distribution<int> dist( 0, factibles.size() - 1);  // elige un destino factible al azar
+    std::uniform_int_distribution<int> dist(0, factibles.size() - 1);  // elige un destino factible al azar
     int depositoElegido = factibles[dist(rng)];
+
     solucion.asignar(v1, depositoElegido);  // reasigna el vendedor al destino elegido puede ser un depósito real o -1
     return true; // movimiento realizado
 }
