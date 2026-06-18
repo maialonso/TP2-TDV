@@ -28,7 +28,6 @@ public:
 
     // operadores/ movimientos
     bool swapVendedores(Solucion&, int v1, int v2) const;
-    bool relocateViejo(Solucion&, int v1) const;
     bool relocate(Solucion&, int v1) const;
     bool relocateAleatorio(
         Solucion&,
@@ -40,7 +39,7 @@ public:
     Solucion busquedaLocalRelocate(Solucion) const;
 
     // metaheurísticas
-    Solucion VNDSwapRelocate(Solucion) const;
+    Solucion swapRelocateSecuencial(Solucion) const;
     Solucion perturbarConRelocate(Solucion solucion, int cantidadRelocates, std::mt19937& rng) const;
     Solucion ILS(
         const Solucion& inicial,

@@ -323,8 +323,8 @@ Solucion Solver::busquedaLocalRelocate(Solucion actual) const {
 // METAHEURISTICAS
 
     
-// aplica VND combinando búsqueda local por Swap y Relocate
-Solucion Solver::VNDSwapRelocate(Solucion actual) const {
+// combina búsqueda local por Swap y Relocate
+Solucion Solver::swapRelocateSecuencial(Solucion actual) const {
 
     while(true) {
 
@@ -337,7 +337,7 @@ Solucion Solver::VNDSwapRelocate(Solucion actual) const {
             continue;
         }
 
-        break;   // si relocate no mejoró, termina el VND
+        break;   // si relocate no mejoró, termina el swapRelocateSecuencial
     }
 
     return actual; // devuelve el óptimo local encontrado
@@ -363,19 +363,19 @@ Solucion Solver::perturbarConRelocate(Solucion solucion, int cantidadRelocates,s
 }
 
 
-// aplica Iterated Local Search utilizando VND y perturbaciones por Relocate
+// aplica Iterated Local Search utilizando swapRelocateSecuencial y perturbaciones por relocate
 Solucion Solver::ILS(const Solucion& inicial, int iteraciones, double porcentajePerturbacion) const {
 
     std::mt19937 rng(42); // semilla fija para poder reproducir resultados
     int n = instancia_.cantidadVendedores();
 
     int cantidadRelocates = std::max(1, (int)(porcentajePerturbacion * n)); // cantidad de vendedores a relocalizar (usa max porque no tiene sentido relocate con 0)
-    Solucion mejor = VNDSwapRelocate(inicial);  // obtiene un primer óptimo local a partir de la solución inicial
-    
+    Solucion mejor = swapRelocateSecuencial(inicial);  // obtiene un primer óptimo local a partir de la solución inicial
+
     for(int it = 0; it < iteraciones; it++) { // repite el proceso de perturbación y búsqueda local
 
         Solucion perturbada = perturbarConRelocate(mejor, cantidadRelocates, rng);  // perturba la mejor solución encontrada
-        Solucion nueva = VNDSwapRelocate(perturbada);  // vuelve a optimizar la solución perturbada
+        Solucion nueva = swapRelocateSecuencial(perturbada);  // vuelve a optimizar la solución perturbada
         if(nueva.mejorQue( mejor, instancia_)) { // si encuentra una solución mejor actualiza la mejor solución conocida
             mejor = nueva;
         }
