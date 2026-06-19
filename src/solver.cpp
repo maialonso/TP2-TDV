@@ -109,20 +109,25 @@ Solucion Solver::heuristicaDemandaMax() const {
     Solucion solucion(n); // solución inicialmente vacía
     std::vector<int> capacidades = instancia_.capacidades(); // copia de capacidades para ir actualizándolas
     std::vector<int> vendedores(n); // vector donde se guardan los vendedores
+    std::vector<int> demandaMax(n, 0);  // demanda máxima de cada vendedor
 
-    std::iota(vendedores.begin(), vendedores.end(), 0); // crea vendedores = [0, 1, 2, ..., n-1]
+    //precalcula demandas maximas
+    for(int vendedor = 0; vendedor < n; vendedor++) {
+        for(int deposito = 0; deposito < m; deposito++) {
+            demandaMax[vendedor] = std::max(
+                demandaMax[vendedor],
+                instancia_.demanda(deposito, vendedor)
+            );
+        }
+    }
+
+    // crea vendedores = [0, 1, 2, ..., n-1]
+    for(int vendedor = 0; vendedor < n; vendedor++) {
+        vendedores[vendedor] = vendedor; } 
     
-    std::sort(vendedores.begin(), vendedores.end(), [&](int v1, int v2) {   // ordena los vendedores de mayor demanda máxima a menor demanda máxima
-
-            int demandaMax1 = 0; 
-            int demandaMax2 = 0; 
-
-            for(int deposito = 0; deposito < m; deposito++) {   // recorre todos los depósitos para calcular la demanda máxima de cada vendedor
-                demandaMax1 = std::max(demandaMax1, instancia_.demanda(deposito, v1));
-                demandaMax2 = std::max(demandaMax2, instancia_.demanda(deposito, v2));
-            }
-
-            return demandaMax1 > demandaMax2;   // coloca primero al vendedor con mayor demanda máxima
+    // ordena los vendedores de mayor demanda máxima a menor demanda máxima utilizando las demandas máximas precalculadas
+    std::sort(vendedores.begin(),vendedores.end(),[&](int v1, int v2) { 
+            return demandaMax[v1] > demandaMax[v2];
         }
     );
 
@@ -150,26 +155,27 @@ Solucion Solver::heuristicaDemandaProm() const {
     std::vector<int> capacidades = instancia_.capacidades(); // copia de capacidades para ir actualizándolas
     std::vector<int> vendedores(n); // vector con todos los vendedores
 
-    std::iota(vendedores.begin(), vendedores.end(), 0); // crea vendedores = [0, 1, 2, ..., n-1]
+    // crea vendedores = [0, 1, 2, ..., n-1]
+    for(int vendedor = 0; vendedor < n; vendedor++) {
+        vendedores[vendedor] = vendedor; } 
+    
+    std::vector<double> demandaPromedio(n, 0.0);    // demanda promedio de cada vendedor
 
-    std::sort(vendedores.begin(), vendedores.end(), [&](int v1, int v2) {   // ordena los vendedores de mayor demanda promedio a menor demanda promedio
+    // calcula la demanda promedio de cada vendedor
+    for(int vendedor = 0; vendedor < n; vendedor++) {
 
-            double promedio1 = 0.0; 
-            double promedio2 = 0.0; 
-
-            for(int deposito = 0; deposito < m; deposito++) {   // recorre todos los depósitos para sumar las demandas
-                promedio1 += instancia_.demanda(deposito, v1);
-                promedio2 += instancia_.demanda(deposito, v2);
-            }
-
-            // divide por la cantidad de depósitos para obtener el promedio
-            promedio1 /= m;
-            promedio2 /= m;
-
-            return promedio1 > promedio2;   // coloca primero al vendedor con mayor demanda promedio
+        for(int deposito = 0; deposito < m; deposito++) {
+            demandaPromedio[vendedor] +=
+                instancia_.demanda(deposito, vendedor);
         }
-    );
 
+        demandaPromedio[vendedor] /= m;
+    }
+    
+    // ordena los vendedores de mayor demanda promedio a menor demanda promedio utilizando las demandas promedio precalculadas
+    std::sort(vendedores.begin(), vendedores.end(),
+    [&](int v1, int v2) {
+        return demandaPromedio[v1] > demandaPromedio[v2]; });
     for(int vendedor : vendedores) { // recorre los vendedores en el orden definido
 
         int mejorDeposito = mejorDepositoFactible(vendedor, capacidades); // busca el depósito factible de menor costo
